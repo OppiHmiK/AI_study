@@ -14,9 +14,9 @@ import re
 import sys
 
 app = Flask(__name__)
-naver_key = 'Xbbwo5vSD6gCq_5Fa2P8'
-naver_pw = 'hHisHjqN_M'
-google_key = 'AIzaSyBYrkhvhfXjdR7CA9EXWKqp5q5rLprMfNs'
+naver_key = Hippo's Key
+naver_pw = Hippo's pw
+google_key = Hippo's key
 
 
 @app.route('/weather', methods=['GET', 'POST'])
@@ -80,7 +80,6 @@ def weather():
     return jsonify(result)
 
 
-@app.route('/song', methods=['GET', 'POST'])
 def song():
     error_msg = '죄송하지만 다시 추천해 주세요 ㅠ'
     body = request.get_json()
@@ -99,15 +98,13 @@ def song():
         ans_list = ['이 노래 어떠신가요?', '이 노래 한번 들어보세요!', '누군가 한테 추천 받은 노래인데 노래 좋아요!', '이 노래 띵곡이에요!']
         url, thumbnail = search_youtube(query)
 
-        fpath = '../DB/song_db.csv'
-        db = pd.read_csv(fpath, encoding='utf-8', engine='python', names=['no', 'artist', 'answer', 'url', 'thumnail'])
-
+        db = pymysql.connect(host='localhost', db='EDItH', user='root', charset='utf8')
         c_time = t.ctime()
         random.seed(c_time)
 
-        db.loc[len(db) + 1] = [len(db) + 1, artist, random.sample(ans_list, 1)[0], url, thumbnail]
-        db.drop_duplicates(['url'])
-        db.to_csv(fpath, encoding='utf-8', header=False)
+        with db.cursor(pymysql.cursors.DictCursor) as cursor:
+            sql = '''insert into song_db(singer, answer, url, thumbnail) values (%s, %s, %s, %s)'''
+            cursor.execute(sql, (artist, random.sample(ans_list, 1), url, thumbnail))
 
         answer = random.sample(rec_list, 1)
         result = {"version": "2.0", "template": {"outputs": [{"simpleText": {"text": answer[0]}}]}}
@@ -142,8 +139,11 @@ def search_youtube(query, number_of=1):
 
 @app.route('/song_reco', methods=['GET', 'POST'])
 def song_reco():
-    fpath = '../DB/song_db.csv'
-    db = pd.read_csv(fpath, encoding='utf-8')
+
+
+    with db.cursor(pymysql.cursors.DictCursor) as cursor:
+        sql = '''select * from song_db'''
+        db = pd.read_sql(sql, cursor)
 
     c_time = t.ctime()
     random.seed(c_time)
@@ -152,10 +152,12 @@ def song_reco():
     url = db['url'][rand]
     thumbnail = db['thumnail'][rand]
     answer = db['answer'][rand]
+    title = db['answer'][rand]
 
     result = {'version': '2.0', 'template':
         {'outputs': [
             {'basicCard': {
+                'title' : title,
                 'description': answer,
                 'thumbnail': {'imageUrl': thumbnail},
                 'buttons': [
