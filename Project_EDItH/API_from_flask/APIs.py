@@ -14,9 +14,9 @@ import re
 import sys
 
 app = Flask(__name__)
-naver_key = Hippo's Key
-naver_pw = Hippo's pw
-google_key = Hippo's key
+naver_key = "Hippo's Key"
+naver_pw = "Hippo's pw"
+google_key = "Hippo's key"
 
 
 @app.route('/weather', methods=['GET', 'POST'])
