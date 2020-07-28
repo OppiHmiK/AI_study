@@ -1,0 +1,46 @@
+[2020-07-28 18:24:07] - [INFO] images load complete! :D
+[2020-07-28 18:24:20] - [INFO] apply comlete! :D
+[2020-07-28 18:24:33] - [INFO] apply comlete! :D
+[2020-07-28 18:24:34] - [INFO] apply comlete! :D
+[2020-07-28 18:24:34] - [INFO] apply comlete! :D
+[2020-07-28 18:24:41] - [INFO] apply comlete! :D
+[2020-07-28 18:24:50] - [INFO] save path ready! :D
+[2020-07-28 18:24:52] - [INFO] generate ok! :D
+[2020-07-28 18:25:57] - [INFO] save path ready! :D
+[2020-07-28 18:26:09] - [INFO] generate ok! :D
+[2020-07-28 18:26:23] - [INFO] save path ready! :D
+[2020-07-28 18:26:35] - [INFO] generate ok! :D
+[2020-07-28 18:44:54] - [INFO] images load complete! :D
+[2020-07-28 18:45:08] - [ERR 6] [Errno 2] No such file or directory: '' - invalid save path... :(
+[2020-07-28 18:45:14] - [INFO] save path ready! :D
+[2020-07-28 18:45:17] - [INFO] generate ok! :D
+[2020-07-28 18:47:13] - [INFO] images load complete! :D
+[2020-07-28 18:47:26] - [INFO] save path ready! :D
+[2020-07-28 18:47:27] - [INFO] generate ok! :D
+[2020-07-28 18:51:12] - [INFO] images load complete! :D
+[2020-07-28 18:51:17] - [INFO] save path ready! :D
+[2020-07-28 18:51:17] - [INFO] generate ok! :D
+[2020-07-28 18:51:41] - [INFO] save path ready! :D
+[2020-07-28 18:51:43] - [INFO] generate ok! :D
+[2020-07-28 18:53:18] - [INFO] images load complete! :D
+[2020-07-28 18:53:34] - [INFO] save path ready! :D
+[2020-07-28 18:53:34] - [ERR 5] 'float' object is not subscriptable - generate failed... :(
+[2020-07-28 18:54:07] - [ERR 1] expected str, bytes or os.PathLike object, not tuple - invalid image directory... :(
+[2020-07-28 18:54:14] - [ERR 1] expected str, bytes or os.PathLike object, not tuple - invalid image directory... :(
+[2020-07-28 18:54:21] - [INFO] images load complete! :D
+[2020-07-28 18:54:27] - [ERR 6] [Errno 2] No such file or directory: '' - invalid save path... :(
+[2020-07-28 18:54:50] - [INFO] save path ready! :D
+[2020-07-28 18:55:01] - [INFO] generate ok! :D
+[2020-07-28 18:58:27] - [INFO] images load complete! :D
+[2020-07-28 18:58:37] - [INFO] save path ready! :D
+[2020-07-28 18:58:37] - [ERR 5] [Errno 2] No such file or directory: '/home/kimhippo/바탕화면/AI/research/augGo2/gen/imgs/1595930317.952058_z6oVJkmq0D4b0.jpg' - generate failed... :(
+[2020-07-28 18:59:36] - [INFO] images load complete! :D
+[2020-07-28 18:59:42] - [INFO] save path ready! :D
+[2020-07-28 18:59:43] - [INFO] generate ok! :D
+[2020-07-28 19:01:16] - [ERR 1] expected str, bytes or os.PathLike object, not tuple - invalid image directory... :(
+[2020-07-28 19:01:29] - [INFO] images load complete! :D
+[2020-07-28 19:01:40] - [INFO] images load complete! :D
+[2020-07-28 19:01:48] - [INFO] save path ready! :D
+[2020-07-28 19:01:48] - [INFO] generate ok! :D
+[2020-07-28 19:02:12] - [INFO] save path ready! :D
+[2020-07-28 19:02:12] - [INFO] generate ok! :D
