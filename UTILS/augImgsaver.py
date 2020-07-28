@@ -208,27 +208,26 @@ class canvas:
                 generator = ImageDataGenerator(rotation_range = rot, width_shift_range = width, height_shift_range= height,
                                                 zoom_range=zoom, horizontal_flip=hori, vertical_flip=ver, shear_range=shear)
 
-                print(noi // len(self.imgs))
-                print(noi)
-                print(len(self.imgs))
-
                 for (idx, oriImg) in enumerate(self.imgs):
 
                     imgPath = self.imgPaths[idx]
                     dirName = imgPath.split(os.path.sep)[-2]
                     os.makedirs(f'{savePath}/{dirName}', exist_ok=True)
 
-                    print(dirName)
+                    dirs = "/".join(imgPath.split(os.path.sep)[:-1])
+                    fileCnt = len(os.listdir(dirs))
+                    print(dirName, fileCnt)
+                    print(int(noi/fileCnt))
+
                     oriImg = pre.image.img_to_array(oriImg)
                     oriImg = np.expand_dims(oriImg, axis = 0)
+                    cnt = int(noi / fileCnt) + int(noi % fileCnt) if (idx + 1) == fileCnt else int(noi / fileCnt)
 
                     for (idx2, batch) in enumerate(generator.flow(oriImg, batch_size=1)):
                         genImg = pre.image.array_to_img(batch[0])
                         genImg.save(f'{savePath}/{dirName}/{time.time()}_{randomName(12)}{idx2}.jpg')
 
-                        print(f'index : {idx2 + 1}')
-                        print(f'index / noi : {(idx2 + 1) % noi}')
-                        if (idx2+1) % (noi % len() == 0:
+                        if (idx2+1) % cnt == 0:
                             break
                 
                 text = '[INFO] generate ok! :D'
