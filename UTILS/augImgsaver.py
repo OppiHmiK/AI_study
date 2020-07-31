@@ -8,21 +8,27 @@ import tkinter.ttk as ttk
 import tkinter as tk
 import numpy as np
 import pickle
+import shutil
+import random
 import time
 import PIL
 import cv2
 import os
+import re
 
 class canvas:
     def __init__(self):
         self.window = tk.Tk()
         self.window.title('augGo2')
-        self.window.geometry('900x400+70+70')
+        self.window.geometry('900x430+70+70')
 
         title = tk.Label(self.window, text = 'go2 with data augmentation')
-        image = tk.Label(self.window, text = 'applied image')
 
-        image.place(y = 20, x = 650)
+        self.imgText = tk.StringVar()
+        self.imgText.set('Loaded image')
+        imageLb = tk.Label(self.window, textvariable = self.imgText, relief = 'solid')
+
+        imageLb.place(y = 40, x = 460, width = 420, height = 20)
         title.place(y = 10, x = 150)
 
         self.genBtn = tk.Button(self.window, text = 'generate', command = self.generate)
@@ -35,15 +41,20 @@ class canvas:
         self.genBtn.place(y = 160, x = 220, width = 100)
         self.exitBtn.place(y = 160, x = 320, width = 100)
 
+        self.loadedPath = tk.StringVar()
+        self.loadedPath.set('Image not loaded')
+        loadPathlb = tk.Label(self.window, textvariable = self.loadedPath, relief = 'solid')
+        loadPathlb.place(y = 200, x = 20, width = 400, height = 20)
+
         self.frame = tk.Frame(self.window, width = 270, height = 160,  relief = 'solid', bd = 2)
         self.imgFrame = tk.Frame(self.window, width = 420, height = 350,  relief = 'solid', bd = 2)
-        self.frame.place(y = 190, x = 10)
-        self.imgFrame.place(y = 40, x = 460)
+        self.frame.place(y = 230, x = 20)
+        self.imgFrame.place(y = 70, x = 460)
 
         self.fileScrollH = tk.Scrollbar(self.frame)
         self.fileScrollH.pack(side = 'right', fill = 'y')
         self.fileListbox = tk.Listbox(self.frame, selectmode = 'single', width = 270, height = 160, yscrollcommand = self.fileScrollH.set)
-        self.fileListbox.place(y = 190, x = 10)
+        self.fileListbox.place(y = 220, x = 10)
 
         self.horizonCheck = tk.BooleanVar()
         self.verticalCheck = tk.BooleanVar()
@@ -129,12 +140,13 @@ class canvas:
             for (idx, batch) in enumerate(generator.flow(testImg, batch_size=1)):
                 img = pre.image.array_to_img(batch[0])
                 print(type(img))
-                img.save('dd.jpg')
+                img.save(f'applied_{idx}.jpg')
                 if idx % 1 == 0:
                     break
 
             # image = PIL.Image.fromarray(img)
             image = ImageTk.PhotoImage(image = img)
+            self.imgText.set('Applied image')
 
             firstImg = tk.Label(self.imgFrame, image = image)
             firstImg.pack(fill = 'both')
@@ -152,7 +164,7 @@ class canvas:
 
     def loadImgs(self):
         try:
-            imgPath = filedialog.askdirectory(title = 'Select your Images')
+            imgPath = filedialog.askdirectory(title = 'Select your Images', initialdir = './')
             self.imgPaths = list(sorted(list_images(imgPath)))
             self.showimgs = []
             self.imgs = []
@@ -168,7 +180,6 @@ class canvas:
                 self.imgs.append(npimg)
                 self.showimgs.append(image)
 
-            print(type(self.imgs[0]))
             firstImg = tk.Label(self.imgFrame, image = self.showimgs[0])
             firstImg.pack(fill = 'both')
 
@@ -176,6 +187,7 @@ class canvas:
             self.log(text)
             print(text)
 
+            self.loadedPath.set(imgPath)
         except Exception as e:
             text = f'[ERR 1] {e} - invalid image directory... :('
             self.log(text)
@@ -185,69 +197,89 @@ class canvas:
             pass
 
     def generate(self):
-        try:
-            savePath = filedialog.askdirectory(title = 'Select your save path')
-            print(savePath)
+        # try:
+        savePath = filedialog.askdirectory(title = 'Select your save path')
+        text = f'[INFO] selected {savePath} as savepath'
+        print(f'[INFO] selected {savePath} as savepath')
+        self.log(text)
 
-            text = '[INFO] save path ready! :D'
+        text = '[INFO] save path ready! :D'
+        self.log(text)
+        print(text)
+        # try:
+        noi = int(self.numofImg.get())
+        # print(self.imgPaths)
+
+        for imgPath in self.imgPaths:
+            imPath = imgPath.split(os.path.sep)[:-1]
+            imPath = '/'.join(imPath)
+
+            nof = len(os.listdir(imPath))
+            diff = noi - nof
+
+            if diff < 0:
+                try:
+                    print(diff)
+                    os.makedirs(f'./residue/{imgPath.split(os.path.sep)[-2]}', exist_ok=True)
+                    for _ in range(abs(diff)):
+                        random.seed(time.ctime())
+                        random.shuffle(self.imgPaths)
+                        shutil.move(imgPath, f'./residue/{imgPath.split(os.path.sep)[-2]}/{imgPath.split(os.path.sep)[-1]}')
+                except:
+                    pass
+        # except Exception as e:
+        #     text = f'[ERR 3] {e} - invalid parameters... :('
+        #     self.log(text)
+
+        #     print(text)
+        #     messagebox.showerror('error occured', 'invalid parameters included')
+        #     pass
+
+        try:
+            hori, ver, rot, zoom, width, height, shear = self.getParams()
+            generator = ImageDataGenerator(rotation_range = rot, width_shift_range = width, height_shift_range= height,
+                                            zoom_range=zoom, horizontal_flip=hori, vertical_flip=ver, shear_range=shear)
+
+            for (idx, oriImg) in enumerate(self.imgs):
+
+                imgPath = self.imgPaths[idx]
+                dirName = imgPath.split(os.path.sep)[-2]
+                os.makedirs(f'{savePath}/{dirName}', exist_ok=True)
+
+                dirs = "/".join(imgPath.split(os.path.sep)[:-1])
+                nof = len(os.listdir(dirs))
+                print(dirName, nof)
+                print(int(noi/nof))
+
+                oriImg = pre.image.img_to_array(oriImg)
+                oriImg = np.expand_dims(oriImg, axis = 0)
+                cnt = int(noi / nof) + int(noi % nof) if (idx + 1) == nof else int(noi / nof)
+
+                for (idx2, batch) in enumerate(generator.flow(oriImg, batch_size=1)):
+                    genImg = pre.image.array_to_img(batch[0])
+                    genImg.save(f'{savePath}/{dirName}/{randomName(13)}_{time.time()}_{randomName(12)}{idx2}.jpg')
+
+                    if (idx2+1) % cnt == 0:
+                        break
+            
+            text = '[INFO] generate ok! :D'
             self.log(text)
             print(text)
-            try:
-                noi = int(self.numofImg.get())
-
-            except Exception as e:
-                text = f'[ERR 3] {e} - invalid parameters... :('
-                self.log(text)
-
-                print(text)
-                messagebox.showerror('error occured', 'invalid parameters included')
-                pass
-
-            try:
-                hori, ver, rot, zoom, width, height, shear = self.getParams()
-                generator = ImageDataGenerator(rotation_range = rot, width_shift_range = width, height_shift_range= height,
-                                                zoom_range=zoom, horizontal_flip=hori, vertical_flip=ver, shear_range=shear)
-
-                for (idx, oriImg) in enumerate(self.imgs):
-
-                    imgPath = self.imgPaths[idx]
-                    dirName = imgPath.split(os.path.sep)[-2]
-                    os.makedirs(f'{savePath}/{dirName}', exist_ok=True)
-
-                    dirs = "/".join(imgPath.split(os.path.sep)[:-1])
-                    fileCnt = len(os.listdir(dirs))
-                    print(dirName, fileCnt)
-                    print(int(noi/fileCnt))
-
-                    oriImg = pre.image.img_to_array(oriImg)
-                    oriImg = np.expand_dims(oriImg, axis = 0)
-                    cnt = int(noi / fileCnt) + int(noi % fileCnt) if (idx + 1) == fileCnt else int(noi / fileCnt)
-
-                    for (idx2, batch) in enumerate(generator.flow(oriImg, batch_size=1)):
-                        genImg = pre.image.array_to_img(batch[0])
-                        genImg.save(f'{savePath}/{dirName}/{time.time()}_{randomName(12)}{idx2}.jpg')
-
-                        if (idx2+1) % cnt == 0:
-                            break
-                
-                text = '[INFO] generate ok! :D'
-                self.log(text)
-                print(text)
-
-            except Exception as e:
-                text = f'[ERR 5] {e} - generate failed... :('
-                self.log(text)
-                messagebox.showerror('error occured', 'generate failed...')
-
-                print(text)
-                pass
 
         except Exception as e:
-            text = f'[ERR 6] {e} - invalid save path... :('
+            text = f'[ERR 5] {e} - generate failed... :('
             self.log(text)
+            messagebox.showerror('error occured', 'generate failed...')
 
             print(text)
             pass
+
+        # except Exception as e:
+        #     text = f'[ERR 6] {e} - invalid save path... :('
+        #     self.log(text)
+
+        #     print(text)
+        #     pass
 
     def getParams(self):
         try:
